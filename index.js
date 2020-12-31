@@ -24,27 +24,42 @@ function actualizarCoordenadas(evt) {
   actualizarInputsLatitudLongitud(lat, lng);
 }
 
-function iniciarMarker(map, position) {
-  marker = new google.maps.Marker({
-    map,
-    draggable: true,
-    animation: google.maps.Animation.DROP,
-    position,
-  });
+function iniciarMarkerSiNoExiste(position) {
+  if (map && !marker) {
+    marker = new google.maps.Marker({
+      map,
+      draggable: true,
+      animation: google.maps.Animation.DROP,
+      position,
+    });
+  
+    marker.addListener('dragend', actualizarCoordenadas);
+    marker.addListener('click', actualizarCoordenadas);
+  }
+}
 
-  marker.addListener('dragend', actualizarCoordenadas);
-  marker.addListener('click', actualizarCoordenadas);
+function removerMarker() {
+  if (marker) {
+    marker.setMap(null);
+    marker = null;
+  }
 }
 
 function actualizarCoordenadasEnMapa() {
-  let lat = document.getElementById('lat').value;
-  let lng = document.getElementById('lng').value;
+  let lat = document.getElementById('lat').value.trim();
+  let lng = document.getElementById('lng').value.trim();
 
-  lat = parseFloat(lat);
-  lng = parseFloat(lng);
+  lat = parseFloat(lat); lng = parseFloat(lng);
+
+  if (isNaN(lat) || isNaN(lng)) {
+    removerMarker();
+    return false;
+  }
 
   const coordenadas = { lat, lng };
 
+  iniciarMarkerSiNoExiste(coordenadas);
+  marker.setPosition(coordenadas);
   map.setCenter(coordenadas);
 }
 
@@ -86,21 +101,24 @@ window.initMap = function() {
 
   map.addListener('click', function(evt) {
     const { lat, lng } = obtenerCoordenadas(evt);
+
     const coordenadas = { lat, lng };
 
     actualizarInputsLatitudLongitud(lat, lng);
-
-    if (!marker) {
-      iniciarMarker(map, marker);
-    }
+    iniciarMarkerSiNoExiste(marker);
 
     marker.setPosition(coordenadas);
   });
 };
 
-document.getElementById('btnAceptar').addEventListener('click', function(evt) {
+function handlerActualizarCoordenadas (evt) {
   evt.preventDefault();
+
   actualizarCoordenadasEnMapa();
-});
+}
+
+document.getElementById('lat').addEventListener('blur', handlerActualizarCoordenadas);
+document.getElementById('lng').addEventListener('blur', handlerActualizarCoordenadas);
+document.getElementById('btnAceptar').addEventListener('click', handlerActualizarCoordenadas);
 
 document.head.appendChild(script);
