@@ -119,6 +119,5 @@ function handlerActualizarCoordenadas (evt) {
 
 document.getElementById('lat').addEventListener('blur', handlerActualizarCoordenadas);
 document.getElementById('lng').addEventListener('blur', handlerActualizarCoordenadas);
-document.getElementById('btnAceptar').addEventListener('click', handlerActualizarCoordenadas);
 
 document.head.appendChild(script);
